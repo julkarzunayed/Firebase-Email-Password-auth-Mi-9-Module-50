@@ -1,8 +1,9 @@
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import React, { useState } from 'react';
 import { auth } from '../../firebase/firebase.init';
 import { IoIosEye } from "react-icons/io";
 import { IoIosEyeOff } from 'react-icons/io';
+import { Link } from 'react-router';
 
 const SignUp = () => {
     const [showPss, setShowPss] = useState(false)
@@ -40,7 +41,7 @@ const SignUp = () => {
             return;
         }
         else if (!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/.test(password)) {
-            setErrorMessage("Password Must has a Lower case an Upper Case a digit and eight or more Characters.");
+            setErrorMessage("Password Must has a Lower case an Upper Case a digit and 8 or more Characters.");
             return;
         }
         else if(!terms){
@@ -50,7 +51,12 @@ const SignUp = () => {
 
         createUserWithEmailAndPassword(auth, email, password)
             .then(result => {
-                setSuccess(true)
+                //Verifications by email
+                sendEmailVerification(auth.currentUser)
+                    .then(() => {
+                        setSuccess(true)
+                        alert("An Verification Email is send to your email, Please verify it.")
+                    })
                 console.log(result);
             }).catch(error => {
                 setErrorMessage(error.message);
@@ -78,6 +84,7 @@ const SignUp = () => {
                                 }
                             </span>
                         </div>
+                        <p>Have an account? Go to <Link className='text-blue-500 font-medium underline' to="/login">Login</Link></p>
                         <label className="label mt-2">
                             <input name='terms'  type="checkbox" className="checkbox checkbox-sm" />
                             Accept our terms and conditions

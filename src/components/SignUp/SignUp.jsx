@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from 'firebase/auth';
 import React, { useState } from 'react';
 import { auth } from '../../firebase/firebase.init';
 import { IoIosEye } from "react-icons/io";
@@ -9,13 +9,24 @@ const SignUp = () => {
     const [showPss, setShowPss] = useState(false)
     const [success, setSuccess] = useState('')
     const [errorMessage, setErrorMessage] = useState("");
+    
     const handleSignUp = (e) => {
         e.preventDefault()
         setSuccess('')
         setErrorMessage('')
+        const name = e.target.name.value;
+        const photoURL = e.target.photoURL.value ;
         const email = e.target.email.value;
         const password = e.target.password.value;
         const terms = e.target.terms.checked;
+
+        console.log(name, photoURL, email, password, terms)
+        
+        //Update User Profile Data
+        const userProfileData = {
+            displayName: name,
+            photoURL: photoURL
+        }
 
         // console.log(terms)
 
@@ -44,9 +55,9 @@ const SignUp = () => {
             setErrorMessage("Password Must has a Lower case an Upper Case a digit and 8 or more Characters.");
             return;
         }
-        else if(!terms){
+        else if (!terms) {
             setErrorMessage("Please Accept our Terms and Conditions");
-            return ;
+            return;
         }
 
         createUserWithEmailAndPassword(auth, email, password)
@@ -57,10 +68,16 @@ const SignUp = () => {
                         setSuccess(true)
                         alert("An Verification Email is send to your email, Please verify it.")
                     })
+                //Update User Profile
+                updateProfile(auth.currentUser, userProfileData)
+                    .then(() => {
+                        //profile Data updated
+                    }).catch(error => {
+                        setErrorMessage(error.message);
+                    })
                 console.log(result);
             }).catch(error => {
                 setErrorMessage(error.message);
-                console.log(error.message)
             })
     }
 
@@ -71,8 +88,25 @@ const SignUp = () => {
                 <div className="card-body">
                     <h1 className="text-3xl font-bold text-center">Please SignUp now!</h1>
                     <form onSubmit={handleSignUp} className="fieldset">
+                        <label className="label">Name</label>
+                        <input
+                            type="text"
+                            name='name'
+                            required
+                            className="input"
+                            placeholder="Your Name" />
+                        <label className="label">Photo URL</label>
+                        <input
+                            type="text"
+                            name='photoURL'
+                            className="input"
+                            placeholder="Photo URL" />
                         <label className="label">Email</label>
-                        <input type="email" name='email' className="input" placeholder="Email" />
+                        <input
+                            type="email"
+                            name='email'
+                            className="input"
+                            placeholder="example@emil.com" />
                         <label className="label">Password</label>
                         <div className="border border-gray-300 flex items-center rounded-sm w-[320px] h-[40px]">
                             <input type={showPss ? "text" : "password"} name='password' className="p-3 text-[16px] outline-0 flex-1" placeholder="Password" />
@@ -86,7 +120,7 @@ const SignUp = () => {
                         </div>
                         <p>Have an account? Go to <Link className='text-blue-500 font-medium underline' to="/login">Login</Link></p>
                         <label className="label mt-2">
-                            <input name='terms'  type="checkbox" className="checkbox checkbox-sm" />
+                            <input name='terms' type="checkbox" className="checkbox checkbox-sm" />
                             Accept our terms and conditions
                         </label>
                         {/* <div><a className="link link-hover">Forgot password?</a></div> */}
